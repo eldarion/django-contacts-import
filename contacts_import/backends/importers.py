@@ -71,7 +71,7 @@ class GoogleImporter(BaseImporter):
     def get_contacts(self, credentials):
         h = httplib2.Http()
         response, content = h.request(GOOGLE_CONTACTS_URI, headers={
-            "Authorization": "AuthSub token="%s"" % credentials["authsub_token"]
+            "Authorization": 'AuthSub token="%s"' % credentials["authsub_token"]
         })
         if response.status != 200:
             return
