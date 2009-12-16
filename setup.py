@@ -12,6 +12,7 @@ setup(
     url = "http://github.com/eldarion/django-contacts-import",
     packages = [
         "contacts_import",
+        "contacts_import.backends",
     ],
     classifiers = [
         "Development Status :: 3 - Alpha",
