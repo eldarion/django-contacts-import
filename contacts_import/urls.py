@@ -10,4 +10,5 @@ urlpatterns = patterns("",
         "redirect_to": "/contacts/import_contacts/",
     }, name="bbauth_login"),
     url(r"oauth/login/(?P<service>\w+)/", "contacts_import.views.oauth_login", name="oauth_login"),
+    url(r"oauth/callback/(?P<service>\w+)/", "contacts_import.views.oauth_callback", name="oauth_callback"),
 )

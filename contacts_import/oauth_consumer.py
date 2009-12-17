@@ -3,6 +3,7 @@ import socket
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 from django.utils import simplejson as json
 
 import oauth2 as oauth
@@ -63,11 +64,13 @@ class oAuthConsumer(object):
         return self._unauthorized_token
     
     def fetch_unauthorized_token(self):
+        base_url = "http://contacts-import.pinaxproject.com"
+        callback_url = reverse("oauth_callback", kwargs={"service": self.service})
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
             parameters = {
                 # @@@ fixme
-                "oauth_callback": "http://contacts-import.pinaxproject.com/c/import_contacts/",
+                "oauth_callback": "%s%s" % (base_url, callback_url),
             }
         )
         request.sign_request(self.signature_method, self.consumer, None)
@@ -88,6 +91,13 @@ class oAuthConsumer(object):
             return oauth.Token.from_string(self._oauth_response(request))
         except KeyError:
             raise ServiceFail()
+    
+    def check_token(self, unauth_token, given_token):
+        token = oauth.Token.from_string(unauth_token)
+        if token.key == given_token:
+            return self.authorized_token(token)
+        else:
+            return None
     
     def authorization_url(self, token):
         request = oauth.Request.from_consumer_and_token(
