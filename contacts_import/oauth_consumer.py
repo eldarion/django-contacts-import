@@ -65,6 +65,10 @@ class oAuthConsumer(object):
     def fetch_unauthorized_token(self):
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
+            parameters = {
+                # @@@ fixme
+                "oauth_callback": "http://contacts-import.pinaxproject.com/c/import_contacts/",
+            }
         )
         request.sign_request(self.signature_method, self.consumer, None)
         try:
