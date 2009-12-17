@@ -9,4 +9,5 @@ urlpatterns = patterns("",
     url(r"^bbauth/login/$", "bbauth.views.login", {
         "redirect_to": "/contacts/import_contacts/",
     }, name="bbauth_login"),
+    url(r"oauth/login/(?P<service>\w+)/", "contacts_import.views.oauth_login", name="oauth_login"),
 )

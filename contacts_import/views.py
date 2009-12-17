@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -12,6 +13,7 @@ from gdata.contacts.service import ContactsService
 from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
 from contacts_import.backends.runners import SynchronousRunner, AsyncRunner
+from contacts_import.oauth_consumer import oAuthConsumer
 
 
 GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/"
@@ -83,3 +85,10 @@ def authsub_login(request, redirect_to=None):
         request.session["authsub_token"] = request.GET["token"]
         return HttpResponseRedirect(redirect_to)
     return HttpResponseRedirect(_authsub_url(request.build_absolute_uri()))
+
+
+def oauth_login(request, service):
+    consumer = oAuthConsumer(service)
+    token = consumer.unauthorized_token()
+    request.session["%s_unauth_token" % service] = token.to_string()
+    return HttpResponseRedirect(consumer.authorization_url(token))
