@@ -68,6 +68,7 @@ class oAuthConsumer(object):
         callback_url = reverse("oauth_callback", kwargs={"service": self.service})
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
+            http_method = "POST",
             parameters = {
                 # @@@ fixme
                 "oauth_callback": "%s%s" % (base_url, callback_url),
@@ -85,6 +86,7 @@ class oAuthConsumer(object):
         request = oauth.Request.from_consumer_and_token(self.consumer,
             token = token,
             http_url = self.access_token_url,
+            http_method = "POST",
         )
         request.sign_request(self.signature_method, self.consumer, token)
         try:
