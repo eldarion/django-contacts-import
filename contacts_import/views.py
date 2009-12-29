@@ -102,7 +102,7 @@ def oauth_callback(request, service):
     if unauth_token is None:
         ctx.update({"error": "token_missing"})
     else:
-        auth_token = consumer.check_token(unauth_token, request.GET.get("oauth_token", "no_token"))
+        auth_token = consumer.check_token(unauth_token, request.GET)
         if auth_token:
             request.session["%s_token" % service] = (auth_token.key, auth_token.secret)
             return HttpResponseRedirect(reverse("import_contacts"))

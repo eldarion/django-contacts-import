@@ -86,14 +86,17 @@ class oAuthConsumer(object):
                 raise ServiceFail()
             raise
     
-    def authorized_token(self, token):
+    def authorized_token(self, token, verifier=None):
+        parameters = {}
+        if verifier:
+            parameters.update({
+                "oauth_verifier": verifier,
+            })
         request = oauth.Request.from_consumer_and_token(self.consumer,
             token = token,
             http_url = self.access_token_url,
             http_method = "POST",
-            parameters = {
-                "oauth_verifier": "", # linkedin requires this it seems
-            }
+            parameters = parameters,
         )
         request.sign_request(self.signature_method, self.consumer, token)
         try:
@@ -101,10 +104,11 @@ class oAuthConsumer(object):
         except KeyError:
             raise ServiceFail()
     
-    def check_token(self, unauth_token, given_token):
+    def check_token(self, unauth_token, parameters):
         token = oauth.Token.from_string(unauth_token)
-        if token.key == given_token:
-            return self.authorized_token(token)
+        if token.key == parameters.get("oauth_token", "no_token"):
+            parameters.get("oauth_verifier")
+            return self.authorized_token(token, verifier)
         else:
             return None
     
