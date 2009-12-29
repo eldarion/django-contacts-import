@@ -141,17 +141,12 @@ class oAuthConsumer(object):
     def _oauth_response(self, request):
         # @@@ not sure if this will work everywhere. need to explore more.
         http = httplib2.Http()
-        headers = {}
-        headers.update(request.to_header())
         if request.http_method == "POST":
             ret = http.request(request.http_url, "POST",
                 data = request.to_postdata(),
-                headers = headers,
             )
         else:
-            ret = http.request(request.to_url(), "GET",
-                headers = headers,
-            )
+            ret = http.request(request.to_url(), "GET")
         response, content = ret
         logger.debug(repr(ret))
         return content
