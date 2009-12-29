@@ -73,7 +73,7 @@ class oAuthConsumer(object):
         callback_url = reverse("oauth_callback", kwargs={"service": self.service})
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
-            #http_method = "POST",
+            http_method = "POST",
             parameters = {
                 "oauth_callback": "%s%s" % (base_url, callback_url),
             }
@@ -141,9 +141,11 @@ class oAuthConsumer(object):
     def _oauth_response(self, request):
         # @@@ not sure if this will work everywhere. need to explore more.
         http = httplib2.Http()
-        if request.http_method == "POST":
-            ret = http.request(request.http_url, "POST",
-                data = request.to_postdata(),
+        headers = {}
+        headers.update(request.to_header())
+        if request.method == "POST":
+            ret = http.request(request.url, "POST",
+                headers = headers,
             )
         else:
             ret = http.request(request.to_url(), "GET")
