@@ -107,7 +107,7 @@ class oAuthConsumer(object):
     def check_token(self, unauth_token, parameters):
         token = oauth.Token.from_string(unauth_token)
         if token.key == parameters.get("oauth_token", "no_token"):
-            parameters.get("oauth_verifier")
+            verifier = parameters.get("oauth_verifier")
             return self.authorized_token(token, verifier)
         else:
             return None
