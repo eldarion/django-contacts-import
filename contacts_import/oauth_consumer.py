@@ -122,6 +122,8 @@ class oAuthConsumer(object):
         return request.to_url()
     
     def make_api_call(self, url, token, http_method="GET", **kwargs):
+        if isinstance(token, basestring):
+            token = oauth.Token.from_string(token)
         response = self._oauth_response(
             self._oauth_request(url, token,
                 http_method = http_method,
