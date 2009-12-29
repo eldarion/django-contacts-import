@@ -64,13 +64,13 @@ class oAuthConsumer(object):
         return self._unauthorized_token
     
     def fetch_unauthorized_token(self):
+        # @@@ fixme
         base_url = "http://contacts-import.pinaxproject.com"
         callback_url = reverse("oauth_callback", kwargs={"service": self.service})
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
             http_method = "POST",
             parameters = {
-                # @@@ fixme
                 "oauth_callback": "%s%s" % (base_url, callback_url),
             }
         )
