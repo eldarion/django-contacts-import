@@ -1,4 +1,5 @@
 import httplib2
+import logging
 import socket
 
 from django.conf import settings
@@ -7,6 +8,9 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson as json
 
 import oauth2 as oauth
+
+
+logger = logging.getLogger("oauth_consumer")
 
 
 class ServiceFail(Exception):
@@ -142,4 +146,5 @@ class oAuthConsumer(object):
         else:
             ret = http.request(request.to_url(), "GET")
         response, content = ret
+        logger.debug(repr(ret))
         return content
