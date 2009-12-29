@@ -143,9 +143,15 @@ class oAuthConsumer(object):
         http = httplib2.Http()
         headers = {}
         headers.update(request.to_header())
-        ret = http.request(request.http_url, request.http_method,
-            headers = headers,
-        )
+        if request.http_method == "POST":
+            ret = http.request(request.http_url, "POST",
+                data = request.to_postdata(),
+                headers = headers,
+            )
+        else:
+            ret = http.request(request.to_url(), "GET",
+                headers = headers,
+            )
         response, content = ret
         logger.debug(repr(ret))
         return content
