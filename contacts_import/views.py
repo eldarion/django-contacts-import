@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
@@ -58,6 +58,12 @@ def import_contacts(request, runner_class=AsyncRunner):
                     results = runner_class(GoogleImporter, user=request.user,
                         authsub_token=authsub_token).import_contacts()
                     return _import_success(request,  results)
+            elif request.POST["action"] == "import_linkedin":
+                linkedin_token = request.session.pop("linkedin_token", None)
+                if linkedin_token:
+                    consumer = oAuthConsumer("linkedin")
+                    consumer.make_api_call("https://api.linkedin.com/v1/people/~", linkedin_token)
+                    return HttpResponse("hello")
     else:
         form = VcardImportForm()
     
@@ -104,7 +110,7 @@ def oauth_callback(request, service):
     else:
         auth_token = consumer.check_token(unauth_token, request.GET)
         if auth_token:
-            request.session["%s_token" % service] = (auth_token.key, auth_token.secret)
+            request.session["%s_token" % service] = str(auth_token)
             return HttpResponseRedirect(reverse("import_contacts"))
         else:
             ctx.update({"error": "token_mismatch"})

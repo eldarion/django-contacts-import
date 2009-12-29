@@ -132,6 +132,7 @@ class oAuthConsumer(object):
         )
         if not response:
             raise ServiceFail()
+        logger.debug(repr(response))
         try:
             return json.loads(response)
         except ValueError:
@@ -152,12 +153,7 @@ class oAuthConsumer(object):
         http = httplib2.Http()
         headers = {}
         headers.update(request.to_header())
-        if request.method == "POST":
-            ret = http.request(request.url, "POST",
-                headers = headers,
-            )
-        else:
-            ret = http.request(request.to_url(), "GET")
+        ret = http.request(request.url, request.method, headers=headers)
         response, content = ret
         logger.debug(repr(ret))
         return content
