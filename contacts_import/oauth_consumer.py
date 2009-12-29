@@ -73,7 +73,7 @@ class oAuthConsumer(object):
         callback_url = reverse("oauth_callback", kwargs={"service": self.service})
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_url = self.request_token_url,
-            http_method = "POST",
+            #http_method = "POST",
             parameters = {
                 "oauth_callback": "%s%s" % (base_url, callback_url),
             }
