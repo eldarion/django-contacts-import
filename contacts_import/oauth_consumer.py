@@ -91,6 +91,9 @@ class oAuthConsumer(object):
             token = token,
             http_url = self.access_token_url,
             http_method = "POST",
+            parameters = {
+                "oauth_verifier": "", # linkedin requires this it seems
+            }
         )
         request.sign_request(self.signature_method, self.consumer, token)
         try:
