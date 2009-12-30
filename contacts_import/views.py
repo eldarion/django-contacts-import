@@ -62,8 +62,8 @@ def import_contacts(request, runner_class=AsyncRunner):
                 linkedin_token = request.session.pop("linkedin_token", None)
                 if linkedin_token:
                     consumer = oAuthConsumer("linkedin")
-                    consumer.make_api_call("https://api.linkedin.com/v1/people/~", linkedin_token)
-                    return HttpResponse("hello")
+                    ret = consumer.make_api_call("xml", "https://api.linkedin.com/v1/people/~", linkedin_token)
+                    return HttpResponse(repr(ret))
     else:
         form = VcardImportForm()
     

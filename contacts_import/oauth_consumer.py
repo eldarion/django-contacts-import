@@ -9,6 +9,8 @@ from django.utils import simplejson as json
 
 import oauth2 as oauth
 
+from contacts_import.utils.anyetree import etree
+
 
 logger = logging.getLogger("oauth_consumer")
 
@@ -121,7 +123,7 @@ class oAuthConsumer(object):
         request.sign_request(self.signature_method, self.consumer, token)
         return request.to_url()
     
-    def make_api_call(self, url, token, http_method="GET", **kwargs):
+    def make_api_call(self, kind, url, token, http_method="GET", **kwargs):
         if isinstance(token, basestring):
             token = oauth.Token.from_string(token)
         response = self._oauth_response(
@@ -133,10 +135,17 @@ class oAuthConsumer(object):
         if not response:
             raise ServiceFail()
         logger.debug(repr(response))
-        try:
-            return json.loads(response)
-        except ValueError:
-            raise ServiceFail()
+        if kind == "json":
+            try:
+                return json.loads(response)
+            except ValueError:
+                # @@@ might be better to return a uniform cannot parse
+                # exception and let caller determine if it is service fail
+                raise ServiceFail()
+        elif kind == "xml":
+            return etree.fromstring(response)
+        else:
+            raise Exception("unsupported API kind")
     
     def _oauth_request(self, url, token, http_method="GET", params=None):
         request = oauth.Request.from_consumer_and_token(self.consumer,
