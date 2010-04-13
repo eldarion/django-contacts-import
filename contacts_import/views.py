@@ -12,7 +12,6 @@ from gdata.contacts.service import ContactsService
 
 from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
-# from contacts_import.oauth_consumer import oAuthConsumer
 from contacts_import.settings import RUNNER
 
 
@@ -59,12 +58,6 @@ def import_contacts(request):
                     results = runner_class(GoogleImporter, user=request.user,
                         authsub_token=authsub_token).import_contacts()
                     return _import_success(request,  results)
-            elif request.POST["action"] == "import_linkedin":
-                linkedin_token = request.session.pop("linkedin_token", None)
-                if linkedin_token:
-                    consumer = oAuthConsumer("linkedin")
-                    ret = consumer.make_api_call("xml", "https://api.linkedin.com/v1/people/~", linkedin_token)
-                    return HttpResponse(repr(ret))
     else:
         form = VcardImportForm()
     
@@ -75,7 +68,6 @@ def import_contacts(request):
         "form": form,
         "bbauth_token": request.session.get("bbauth_token"),
         "authsub_token": request.session.get("authsub_token"),
-        "linkedin_token": request.session.get("linkedin_token"),
         "page": page,
         "task_id": request.session.pop("import_contacts_task_id", None),
     }, context_instance=RequestContext(request))
