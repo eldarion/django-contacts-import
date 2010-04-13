@@ -5,7 +5,15 @@ import ybrowserauth
 from django.conf import settings
 from django.utils import simplejson as json
 
-from celery.task import Task
+from contacts_import.backends.runners import AsyncRunner
+from contacts_import.settings import RUNNER
+
+
+# determine the base class based on what type of importing should be done
+if issubclass(RUNNER, AsyncRunner):
+    from celery.task import Task
+else:
+    Task = object
 
 
 class BaseImporter(Task):

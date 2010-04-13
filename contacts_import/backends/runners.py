@@ -1,18 +1,11 @@
 import sys
 
-from django.conf import settings
-
-
-DEFAULT_CONTACT_PERSISTANCE = getattr(settings, "DEFAULT_CONTACT_PERSISTANCE",
-    "contacts_import.backends.persistance.ModelPersistance")
-
 
 class BaseRunner(object):
     def __init__(self, importer, persistance=None, **credentials):
+        from contacts_import.settings import DEFAULT_PERSISTANCE
         if persistance is None:
-            module, klass = DEFAULT_CONTACT_PERSISTANCE.rsplit(".", 1)
-            __import__(module)
-            persistance = getattr(sys.modules[module], klass)
+            persistance = DEFAULT_PERSISTANCE
         self.importer = importer
         self.persistance = persistance
         self.credentials = credentials
@@ -23,7 +16,7 @@ class BaseRunner(object):
 
 class SynchronousRunner(BaseRunner):
     def import_contacts(self):
-        return self.importer.apply(args=[self.credentials, self.persistance()])
+        return self.importer.run(self.credentials, self.persistance())
 
 
 class AsyncRunner(BaseRunner):

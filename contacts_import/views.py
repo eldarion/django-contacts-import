@@ -12,9 +12,8 @@ from gdata.contacts.service import ContactsService
 
 from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
-from contacts_import.backends.runners import SynchronousRunner, AsyncRunner
-from contacts_import.oauth_consumer import oAuthConsumer
 # from contacts_import.oauth_consumer import oAuthConsumer
+from contacts_import.settings import RUNNER
 
 
 GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/"
@@ -38,12 +37,12 @@ def _import_success(request, results):
 
 
 @login_required
-def import_contacts(request, runner_class=AsyncRunner):
+def import_contacts(request):
     if request.method == "POST":
         if request.POST["action"] == "upload_vcard":
             form = VcardImportForm(request.POST)
             if form.is_valid():
-                results = form.save(request.user, runner_class=runner_class)
+                results = form.save(request.user, runner_class=RUNNER)
                 return _import_success(request, results)
         else:
             form = VcardImportForm()
