@@ -14,9 +14,28 @@ class BaseRunner(object):
         raise NotImplementedError("Implement this in a subclass")
 
 
+class SynchronousResult(object):
+    """
+    Very simple result to mimic what is needed of Celery's result
+    """
+    
+    def __init__(self, importer, *args):
+        self.importer = importer
+        self.args = args
+        self.status = "DONE"
+    
+    def run(self):
+        self.result = self.importer().run(*self.args)
+    
+    def ready(self):
+        return True
+
+
 class SynchronousRunner(BaseRunner):
     def import_contacts(self):
-        return self.importer.run(self.credentials, self.persistance())
+        result = SynchronousResult(self.importer, self.credentials, self.persistance())
+        result.run()
+        return result
 
 
 class AsyncRunner(BaseRunner):

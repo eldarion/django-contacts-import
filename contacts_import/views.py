@@ -38,11 +38,12 @@ def _import_success(request, results):
 
 @login_required
 def import_contacts(request):
+    runner_class = RUNNER
     if request.method == "POST":
         if request.POST["action"] == "upload_vcard":
             form = VcardImportForm(request.POST)
             if form.is_valid():
-                results = form.save(request.user, runner_class=RUNNER)
+                results = form.save(request.user, runner_class=runner_class)
                 return _import_success(request, results)
         else:
             form = VcardImportForm()
