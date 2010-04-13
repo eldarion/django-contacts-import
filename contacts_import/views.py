@@ -21,42 +21,56 @@ GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/"
 def _import_success(request, results):
     if results.ready():
         if results.status == "DONE":
-            request.user.message_set.create(message=_(
-                "%(total)s people with email found, %(imported)s contacts imported."
-            ) % results.result)
+            request.user.message_set.create(
+                message = _("%(total)s people with email found, %(imported)s "
+                    "contacts imported.") % results.result
+            )
         elif results.status == "FAILURE":
-            request.user.message_set.create(message=_("There was an error "
-                "importing your contacts."))
+            request.user.message_set.create(
+                message = _("There was an error importing your contacts.")
+            )
     else:
-        request.user.message_set.create(message=_("We're still importing your "
-            "contacts.  We'll let you know when they're ready, it shouldn't "
-            "take too long."))
+        request.user.message_set.create(
+            message = _("We're still importing your "
+                "contacts.  We'll let you know when they're ready, it "
+                "shouldn't take too long.")
+        )
         request.session["import_contacts_task_id"] = results.task_id
     return HttpResponseRedirect(request.path)
 
 
 @login_required
-def import_contacts(request):
+def import_contacts(request, template_name="contacts_import/import_contacts.html"):
     runner_class = RUNNER
+    
     if request.method == "POST":
         if request.POST["action"] == "upload_vcard":
             form = VcardImportForm(request.POST)
+            
             if form.is_valid():
                 results = form.save(request.user, runner_class=runner_class)
                 return _import_success(request, results)
         else:
             form = VcardImportForm()
+            
             if request.POST["action"] == "import_yahoo":
                 bbauth_token = request.session.pop("bbauth_token", None)
                 if bbauth_token:
-                    results = runner_class(YahooImporter, user=request.user,
-                        bbauth_token=bbauth_token).import_contacts()
+                    runner = runner_class(YahooImporter,
+                        user = request.user,
+                        bbauth_token = bbauth_token
+                    )
+                    results = runner.import_contacts()
                     return _import_success(request, results)
+            
             elif request.POST["action"] == "import_google":
                 authsub_token = request.session.pop("authsub_token", None)
                 if authsub_token:
-                    results = runner_class(GoogleImporter, user=request.user,
-                        authsub_token=authsub_token).import_contacts()
+                    runner = runner_class(GoogleImporter,
+                        user = request.user,
+                        authsub_token = authsub_token
+                    )
+                    results = runner.import_contacts()
                     return _import_success(request,  results)
     else:
         form = VcardImportForm()
@@ -64,13 +78,15 @@ def import_contacts(request):
     contacts = request.user.contacts.all()
     page = Paginator(contacts, 50).page(request.GET.get("page", 1))
     
-    return render_to_response("contacts_import/import_contacts.html", {
+    ctx = {
         "form": form,
         "bbauth_token": request.session.get("bbauth_token"),
         "authsub_token": request.session.get("authsub_token"),
         "page": page,
         "task_id": request.session.pop("import_contacts_task_id", None),
-    }, context_instance=RequestContext(request))
+    }
+    
+    return render_to_response(template_name, RequestContext(request, ctx))
 
 
 def _authsub_url(next):
