@@ -13,6 +13,7 @@ setup(
     packages = [
         "contacts_import",
         "contacts_import.backends",
+        "contacts_import.templatetags",
     ],
     classifiers = [
         "Development Status :: 3 - Alpha",
