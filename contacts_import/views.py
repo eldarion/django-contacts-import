@@ -14,6 +14,7 @@ from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
 from contacts_import.backends.runners import SynchronousRunner, AsyncRunner
 from contacts_import.oauth_consumer import oAuthConsumer
+# from contacts_import.oauth_consumer import oAuthConsumer
 
 
 GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/"
