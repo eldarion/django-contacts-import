@@ -1,7 +1,5 @@
 from django.conf.urls.defaults import *
 
-import contacts_import.tasks
-
 
 urlpatterns = patterns("",
     url(r"^import_contacts/$", "contacts_import.views.import_contacts", name="import_contacts"),
