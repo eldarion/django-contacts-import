@@ -56,7 +56,7 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
         action = request.POST["action"]
         
         if action == "upload_vcard":
-            form = VcardImportForm(request.POST)
+            form = VcardImportForm(request.POST, request.FILES)
             
             if form.is_valid():
                 results = form.save(request.user, runner_class=runner_class)

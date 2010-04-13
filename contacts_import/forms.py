@@ -9,5 +9,5 @@ class VcardImportForm(forms.Form):
     
     def save(self, user, runner_class=SynchronousRunner):
         importer = runner_class(VcardImporter, user=user,
-            stream=self.cleaned_data["vcard_file"].content)
+            stream=self.cleaned_data["vcard_file"])
         return importer.import_contacts()
