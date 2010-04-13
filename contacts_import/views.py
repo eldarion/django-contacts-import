@@ -12,7 +12,8 @@ from gdata.contacts.service import ContactsService
 
 from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
-from contacts_import.settings import RUNNER
+from contacts_import.models import Contact
+from contacts_import.settings import RUNNER, CALLBACK
 
 
 GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/"
@@ -42,18 +43,46 @@ def _import_success(request, results):
 @login_required
 def import_contacts(request, template_name="contacts_import/import_contacts.html"):
     runner_class = RUNNER
+    callback = CALLBACK
+    
+    contacts = request.user.contacts.all()
+    try:
+        page_num = int(request.GET.get("page", 1))
+    except ValueError:
+        page_num = 1
+    page = Paginator(contacts, 50).page(page_num)
     
     if request.method == "POST":
-        if request.POST["action"] == "upload_vcard":
+        action = request.POST["action"]
+        
+        if action == "upload_vcard":
             form = VcardImportForm(request.POST)
             
             if form.is_valid():
                 results = form.save(request.user, runner_class=runner_class)
                 return _import_success(request, results)
+        elif action == "import-contacts":
+            selected_post = set(request.POST.getlist("selected-contacts"))
+            selected_session = request.session.get("selected-contacts", set())
+            on_page = set([str(o.pk) for o in page.object_list])
+            selected = (
+                (selected_session - (on_page - selected_post)).union(selected_post)
+            )
+            request.session["selected-contacts"] = selected
+            
+            if "next" in request.POST:
+                return HttpResponseRedirect("%s?page=%s" % (request.path, page_num+1))
+            elif "prev" in request.POST:
+                return HttpResponseRedirect("%s?page=%s" % (request.path, page_num-1))
+            elif "finish" in request.POST:
+                if not selected:
+                    Contact.objects.filter(user=request.user).delete()
+                    return HttpResponseRedirect(reverse("import_contacts"))
+                return callback(request, selected)
         else:
             form = VcardImportForm()
             
-            if request.POST["action"] == "import_yahoo":
+            if action == "import_yahoo":
                 bbauth_token = request.session.pop("bbauth_token", None)
                 if bbauth_token:
                     runner = runner_class(YahooImporter,
@@ -63,7 +92,7 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                     results = runner.import_contacts()
                     return _import_success(request, results)
             
-            elif request.POST["action"] == "import_google":
+            elif action == "import_google":
                 authsub_token = request.session.pop("authsub_token", None)
                 if authsub_token:
                     runner = runner_class(GoogleImporter,
@@ -74,9 +103,6 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                     return _import_success(request,  results)
     else:
         form = VcardImportForm()
-    
-    contacts = request.user.contacts.all()
-    page = Paginator(contacts, 50).page(request.GET.get("page", 1))
     
     ctx = {
         "form": form,

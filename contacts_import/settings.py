@@ -6,8 +6,14 @@ except ImportError:
     from importlib import import_module
 
 
-def map_to_class(setting, default):
-    path = getattr(settings, setting, default)
+def map_to_attr(setting, default=None):
+    if default is None:
+        try:
+            path = getattr(settings, setting)
+        except AttributeError:
+            raise ImproperlyConfigured("You must define '%s' in settings" % setting)
+    else:
+        path = getattr(settings, setting, default)
     i = path.rfind(".")
     module, attr = path[:i], path[i+1:]
     try:
@@ -21,11 +27,14 @@ def map_to_class(setting, default):
     return attr
 
 
-DEFAULT_PERSISTANCE = map_to_class(
+DEFAULT_PERSISTANCE = map_to_attr(
     "CONTACTS_IMPORT_DEFAULT_PERSISTANCE",
     "contacts_import.backends.persistance.ModelPersistance"
 )
-RUNNER = map_to_class(
+RUNNER = map_to_attr(
     "CONTACTS_IMPORT_RUNNER",
     "contacts_import.backends.runners.SynchronousRunner"
+)
+CALLBACK = map_to_attr(
+    "CONTACTS_IMPORT_CALLBACK"
 )
