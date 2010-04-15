@@ -45,7 +45,7 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
     runner_class = RUNNER
     callback = CALLBACK
     
-    contacts = request.user.contacts.all()
+    contacts = request.user.imported_contacts.all()
     try:
         page_num = int(request.GET.get("page", 1))
     except ValueError:
