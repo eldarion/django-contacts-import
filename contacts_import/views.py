@@ -61,6 +61,7 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
             if form.is_valid():
                 results = form.save(request.user, runner_class=runner_class)
                 return _import_success(request, results)
+        
         elif action == "import-contacts":
             selected_post = set(request.POST.getlist("selected-contacts"))
             selected_session = request.session.get("selected-contacts", set())
@@ -83,6 +84,7 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                 response = callback(request, selected)
                 TransientContact.objects.filter(owner=request.user).delete()
                 return response
+        
         else:
             form = VcardImportForm()
             
