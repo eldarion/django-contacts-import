@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from django.contrib.auth.models import User
 
-from contacts_import.models import Contact
+from contacts_import.models import TransientContact
 
 
 class BasicTest(TestCase):
@@ -29,9 +29,9 @@ class BasicTest(TestCase):
         self.assertEqual(response.status_code, 302)
     
     def test_contact_display(self):
-        Contact.objects.create(user=self.bob, name="Bjarne Stroustrup",
+        TransientContact.objects.create(user=self.bob, name="Bjarne Stroustrup",
             email="bjarne@making.life.hard.com")
-        Contact.objects.create(user=self.bob, name="Guido van Rossum",
+        TransientContact.objects.create(user=self.bob, name="Guido van Rossum",
             email="guido@python.org")
         
         response = self.client.get(reverse("import_contacts"))

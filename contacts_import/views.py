@@ -12,7 +12,7 @@ from gdata.contacts.service import ContactsService
 
 from contacts_import.forms import VcardImportForm
 from contacts_import.backends.importers import GoogleImporter, YahooImporter
-from contacts_import.models import Contact
+from contacts_import.models import TransientContact
 from contacts_import.settings import RUNNER, CALLBACK
 
 
@@ -76,12 +76,12 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                 return HttpResponseRedirect("%s?page=%s" % (request.path, page_num-1))
             elif "finish" in request.POST:
                 if not selected:
-                    Contact.objects.filter(user=request.user).delete()
+                    TransientContact.objects.filter(user=request.user).delete()
                     return HttpResponseRedirect(reverse("import_contacts"))
                 # give control over to the callback which is required to
                 # return a HttpResponse
                 response = callback(request, selected)
-                Contact.objects.filter(user=request.user).delete()
+                TransientContact.objects.filter(user=request.user).delete()
                 return response
         else:
             form = VcardImportForm()

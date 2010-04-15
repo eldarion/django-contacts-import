@@ -1,4 +1,4 @@
-from contacts_import.models import Contact
+from contacts_import.models import TransientContact
 
 
 class BasePersistance(object):
@@ -22,8 +22,11 @@ class ModelPersistance(BasePersistance):
         }
     
     def persist_contact(self, contact, status, credentials):
-        obj, created = Contact.objects.get_or_create(user=credentials["user"], 
-            email=contact["email"], defaults={"name": contact["name"]})
+        obj, created = TransientContact.objects.get_or_create(
+            user = credentials["user"],
+            email = contact["email"],
+            defaults = {"name": contact["name"]}
+        )
         status["total"] += 1
         if created:
             status["imported"] += 1

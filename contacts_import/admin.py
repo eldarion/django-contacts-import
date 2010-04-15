@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from contacts_import.models import Contact
+from contacts_import.models import TransientContact
 
 
-class ContactAdmin(admin.ModelAdmin):
+class TransientContactAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.register(Contact, ContactAdmin)
+admin.site.register(TransientContact, TransientContactAdmin)
