@@ -78,7 +78,11 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                 if not selected:
                     Contact.objects.filter(user=request.user).delete()
                     return HttpResponseRedirect(reverse("import_contacts"))
-                return callback(request, selected)
+                # give control over to the callback which is required to
+                # return a HttpResponse
+                response = callback(request, selected)
+                Contact.objects.filter(user=request.user).delete()
+                return response
         else:
             form = VcardImportForm()
             
