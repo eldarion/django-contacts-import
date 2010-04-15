@@ -76,12 +76,12 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                 return HttpResponseRedirect("%s?page=%s" % (request.path, page_num-1))
             elif "finish" in request.POST:
                 if not selected:
-                    TransientContact.objects.filter(user=request.user).delete()
+                    TransientContact.objects.filter(owner=request.user).delete()
                     return HttpResponseRedirect(reverse("import_contacts"))
                 # give control over to the callback which is required to
                 # return a HttpResponse
                 response = callback(request, selected)
-                TransientContact.objects.filter(user=request.user).delete()
+                TransientContact.objects.filter(owner=request.user).delete()
                 return response
         else:
             form = VcardImportForm()

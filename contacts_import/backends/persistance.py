@@ -23,7 +23,7 @@ class ModelPersistance(BasePersistance):
     
     def persist_contact(self, contact, status, credentials):
         obj, created = TransientContact.objects.get_or_create(
-            user = credentials["user"],
+            owner = credentials["user"],
             email = contact["email"],
             defaults = {"name": contact["name"]}
         )
