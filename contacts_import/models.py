@@ -13,4 +13,4 @@ class TransientContact(models.Model):
     email = models.EmailField()
     
     def __unicode__(self):
-        return "%s (%s's contact)" % (self.email,  self.user)
+        return "%s (%s's contact)" % (self.email, self.owner)
