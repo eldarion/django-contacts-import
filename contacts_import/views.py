@@ -133,26 +133,3 @@ def authsub_login(request, redirect_to=None):
         request.session["authsub_token"] = request.GET["token"]
         return HttpResponseRedirect(redirect_to)
     return HttpResponseRedirect(_authsub_url(request.build_absolute_uri()))
-
-
-def oauth_login(request, service):
-    consumer = oAuthConsumer(service)
-    token = consumer.unauthorized_token()
-    request.session["%s_unauth_token" % service] = token.to_string()
-    return HttpResponseRedirect(consumer.authorization_url(token))
-
-
-def oauth_callback(request, service):
-    ctx = RequestContext(request)
-    consumer = oAuthConsumer(service)
-    unauth_token = request.session.get("%s_unauth_token" % service, None)
-    if unauth_token is None:
-        ctx.update({"error": "token_missing"})
-    else:
-        auth_token = consumer.check_token(unauth_token, request.GET)
-        if auth_token:
-            request.session["%s_token" % service] = str(auth_token)
-            return HttpResponseRedirect(reverse("import_contacts"))
-        else:
-            ctx.update({"error": "token_mismatch"})
-    return render_to_response("oauth_error.html", ctx)
