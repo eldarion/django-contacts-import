@@ -89,11 +89,11 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
             form = VcardImportForm()
             
             if action == "import_yahoo":
-                bbauth_token = request.session.pop("bbauth_token", None)
-                if bbauth_token:
+                yahoo_token = request.session.pop("yahoo_token", None)
+                if yahoo_token:
                     runner = runner_class(YahooImporter,
                         user = request.user,
-                        bbauth_token = bbauth_token
+                        yahoo_token = yahoo_token
                     )
                     results = runner.import_contacts()
                     return _import_success(request, results)
@@ -106,13 +106,13 @@ def import_contacts(request, template_name="contacts_import/import_contacts.html
                         authsub_token = authsub_token
                     )
                     results = runner.import_contacts()
-                    return _import_success(request,  results)
+                    return _import_success(request, results)
     else:
         form = VcardImportForm()
     
     ctx = {
         "form": form,
-        "bbauth_token": request.session.get("bbauth_token"),
+        "yahoo_token": request.session.get("yahoo_token"),
         "authsub_token": request.session.get("authsub_token"),
         "page": page,
         "task_id": request.session.pop("import_contacts_task_id", None),

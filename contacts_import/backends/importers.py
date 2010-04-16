@@ -1,6 +1,5 @@
 import httplib2
 import vobject
-import ybrowserauth
 
 from django.conf import settings
 from django.utils import simplejson as json
@@ -17,6 +16,7 @@ else:
 
 
 class BaseImporter(Task):
+    
     def run(self, credentials, persistance):
         status = None
         for contact in self.get_contacts(credentials):
@@ -25,6 +25,7 @@ class BaseImporter(Task):
 
 
 class VcardImporter(BaseImporter):
+    
     def get_contacts(self, credentials):
         for card in vobject.readComponents(credentials["stream"]):
             try:
@@ -38,38 +39,57 @@ class VcardImporter(BaseImporter):
 
 
 class YahooImporter(BaseImporter):
+    
     def get_contacts(self, credentials):
-        ybbauth = ybrowserauth.YBrowserAuth(settings.BBAUTH_APP_ID, 
-            settings.BBAUTH_SHARED_SECRET)
-        ybbauth.token = credentials["bbauth_token"]
-        address_book_json = ybbauth.makeAuthWSgetCall("http://address.yahooapis.com/v1/searchContacts?format=json&email.present=1&fields=name,email")
-        address_book = json.loads(address_book_json)
-        
-        for contact in address_book["contacts"]:
-            email = contact["fields"][0]["data"]
+        from oauth_access.access import OAuthAccess
+        yahoo_token = credentials["yahoo_token"]
+        access = OAuthAccess("yahoo")
+        guid = access.make_api_call(
+            "json",
+            "http://social.yahooapis.com/v1/me/guid?format=json",
+            yahoo_token
+        )["guid"]["value"]
+        address_book = access.make_api_call(
+            "json",
+            "http://social.yahooapis.com/v1/user/%s/contacts?format=json&count=max&view=tinyusercard" % guid,
+            yahoo_token,
+        )
+        for contact in address_book["contacts"]["contact"]:
+            # e-mail (if not found skip contact)
             try:
-                first_name = contact["fields"][1]["first"]
-            except (KeyError, IndexError):
-                first_name = None
-            
+                email = self.get_field_value(contact, "email")
+            except KeyError:
+                continue
+            # name (first and last comes together)
             try:
-                last_name = contact["fields"][1]["last"]
-            except (KeyError, IndexError):
-                last_name = None
-            
-            if first_name and last_name:
-                name = "%s %s" % (first_name, last_name)
-            elif first_name:
-                name = first_name
-            elif last_name:
-                name = last_name
-            else:
+                name = self.get_field_value(contact, "name")
+            except KeyError:
                 name = ""
-            
+            if name:
+                first_name = name["givenName"]
+                last_name = name["familyName"]
+                if first_name and last_name:
+                    name = "%s %s" % (first_name, last_name)
+                elif first_name:
+                    name = first_name
+                elif last_name:
+                    name = last_name
+                else:
+                    name = ""
             yield {
                 "email": email,
                 "name": name,
             }
+    
+    def get_field_value(self, contact, kind):
+        try:
+            for field in contact["fields"]:
+                if field["type"] == kind:
+                    return field["value"]
+        except KeyError:
+            raise Exception("Yahoo data format changed")
+        else:
+            raise KeyError(kind)
 
 
 GOOGLE_CONTACTS_URI = "http://www.google.com/m8/feeds/contacts/default/full?alt=json&max-results=1000"
