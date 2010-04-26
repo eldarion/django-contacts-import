@@ -7,19 +7,11 @@ class BasePersistance(object):
             status = self.default_status()
         return self.persist_contact(contact, status, credentials)
     
-    def default_status(self):
-        return None
-    
     def persist_contact(self, contact, status, credentials):
-        return None
+        return status
 
 
 class ModelPersistance(BasePersistance):
-    def default_status(self):
-        return {
-            "imported": 0,
-            "total": 0,
-        }
     
     def persist_contact(self, contact, status, credentials):
         obj, created = TransientContact.objects.get_or_create(
@@ -34,9 +26,9 @@ class ModelPersistance(BasePersistance):
 
 
 class InMemoryPersistance(BasePersistance):
-    def default_status(self):
-        return []
     
     def persist_contact(self, contact, status, credentials):
-        status.append(contact)
+        # @@@ no longer works (need to conform to status contract which could
+        # be done by adding a new key or emulating a dict and store contacts
+        # that way)
         return status

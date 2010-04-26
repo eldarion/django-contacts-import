@@ -18,7 +18,10 @@ else:
 class BaseImporter(Task):
     
     def run(self, credentials, persistance):
-        status = None
+        status = {
+            "imported": 0,
+            "total": 0,
+        }
         for contact in self.get_contacts(credentials):
             status = persistance.persist(contact, status, credentials)
         return status
