@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import patterns, url, include
 
 from contacts_import.views import (
     ImportBeginView, ImportServiceView
